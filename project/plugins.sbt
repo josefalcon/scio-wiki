@@ -1,0 +1,8 @@
+addSbtPlugin("org.scoverage" % "sbt-scoverage" % "1.3.5")
+addSbtPlugin("org.scalastyle" %% "scalastyle-sbt-plugin" % "0.8.0")
+addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.6")
+addSbtPlugin("se.marcuslonnberg" % "sbt-docker" % "1.3.0")
+addSbtPlugin("com.typesafe.sbt" % "sbt-git" % "0.8.5")
+addSbtPlugin("org.xerial.sbt" % "sbt-pack" % "0.8.0")
+addSbtPlugin("de.johoop" % "jacoco4sbt" % "2.1.6")
+addSbtPlugin("com.cavorite" % "sbt-avro" % "0.3.2")
