@@ -21,11 +21,13 @@ object WikiPageRank {
   
   def main(cmdlineArgs: Array[String]): Unit = {
     val (sc, args) = ContextAndArgs(cmdlineArgs)
+    val project = args("project_id")
+    val dataset = args("dataset_id")
 
-    val pages: SCollection[Page] = sc.typedBigQuery[Page]("SELECT id, title FROM [wiki-140001:wiki.pages]")
+    val pages: SCollection[Page] = sc.typedBigQuery[Page](s"SELECT id, title FROM [${project}:${dataset}.pages]")
 
     val pageLinks: SCollection[PageLink] =
-      sc.typedBigQuery[PageLink]("SELECT a_from_page_id as from_id, b_id as to_id FROM [wiki-140001:wiki.joined_pagelinks]")
+      sc.typedBigQuery[PageLink](s"SELECT from_page_id as from_id, to_page_id as to_id FROM [${project}:${dataset}.joined_pagelinks]")
 
     val links: SCollection[(String, Iterable[String])] = pageLinks.map(p => (p.from_id, p.to_id)).groupByKey
 
@@ -48,14 +50,14 @@ object WikiPageRank {
         .mapValues((1 - dampingFactor) + dampingFactor * _)
     }
 
-    ranks
-      .join(pages.keyBy(_.id))
+    pages.keyBy(_.id)
+      .leftOuterJoin(ranks)
       .values
       .map {
-        case (rank, page) => PageRank(page.id, page.title, rank)
+        case (page, maybeRank) => PageRank(page.id, page.title, maybeRank.getOrElse(0.0))
       }
       .saveAsTypedBigQuery(
-        "wiki-140001:wiki.pageranks",
+        s"${project}:${dataset}.pageranks",
         WRITE_TRUNCATE,
         CREATE_IF_NEEDED)
 
